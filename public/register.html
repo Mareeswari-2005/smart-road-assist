@@ -99,6 +99,8 @@
                     localStorage.setItem('deviceId', data.deviceId);
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('user', JSON.stringify(result.user));
+                    sessionStorage.setItem('token', result.token);
+                    sessionStorage.setItem('user', JSON.stringify(result.user));
                     
                     document.getElementById('success').textContent = 'Account created successfully! Redirecting...';
                     document.getElementById('success').style.display = 'block';
@@ -114,7 +116,7 @@
                         } else {
                             window.location.href = '/user-dashboard';
                         }
-                    }, 2000);
+                    }, 1500);
                 } else {
                     document.getElementById('error').textContent = result.message;
                     document.getElementById('error').style.display = 'block';

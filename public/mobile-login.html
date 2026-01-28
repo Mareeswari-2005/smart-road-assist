@@ -292,6 +292,7 @@
             const data = {
                 email: formData.get('email'),
                 password: formData.get('password'),
+                userType: selectedUserType,
                 deviceId: localStorage.getItem('deviceId') || generateDeviceId()
             };
             
@@ -370,6 +371,7 @@
                         body: JSON.stringify({
                             email: savedEmail,
                             password: savedPassword,
+                            userType: savedUserType || 'user',
                             deviceId: deviceId
                         })
                     });

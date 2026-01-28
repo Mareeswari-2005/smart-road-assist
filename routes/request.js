@@ -518,7 +518,13 @@ router.put('/:id/rate', auth, async (req, res) => {
       
       // Update average rating
       shop.updateAverageRating();
-      await shop.save();
+      
+      // Save only the modified fields to avoid validation issues
+      await Shop.findByIdAndUpdate(shop._id, {
+        ratings: shop.ratings,
+        averageRating: shop.averageRating,
+        totalRatings: shop.totalRatings
+      });
       
       console.log(`Updated shop rating: ${shop.averageRating} (${shop.totalRatings} reviews)`);
     }

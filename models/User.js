@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true
   },
   password: {
@@ -42,6 +41,9 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Create compound unique index for email + userType
+userSchema.index({ email: 1, userType: 1 }, { unique: true });
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();

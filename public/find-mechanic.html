@@ -230,7 +230,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    displayShops(data.mechanics, service);
+                    displayShops(data.mechanics, service, data);
                 } else {
                     throw new Error(data.message || 'Search failed');
                 }
@@ -261,23 +261,36 @@
             });
         }
 
-        function displayShops(mechanics, service) {
+        function displayShops(mechanics, service, data = {}) {
             const shopsSection = document.getElementById('shopsSection');
             const shopsList = document.getElementById('shopsList');
             
             if (!mechanics || mechanics.length === 0) {
                 shopsList.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <h3>No mechanics found</h3>
-                        <p>No mechanics available for ${service} in your area.</p>
-                        <p>Try a different service or location.</p>
+                    <div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                        <h3 style="color: #e74c3c; margin-bottom: 15px;">⚠️ No Mechanics Found</h3>
+                        <p style="margin-bottom: 10px;">${data.message || `No mechanics available for ${service} in your area.`}</p>
+                        ${data.suggestions ? `
+                            <div style="margin-top: 20px;">
+                                <h4 style="color: #333; margin-bottom: 10px;">Suggestions:</h4>
+                                <ul style="text-align: left; display: inline-block;">
+                                    ${data.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer;">Try Again</button>
                     </div>
                 `;
             } else {
-                shopsList.innerHTML = mechanics.map(shop => `
-                    <div class="shop-card">
+                const headerText = data.isAlternative ? 
+                    `<div style="background: #fff3cd; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                        <p style="margin: 0; color: #856404;">💡 ${data.message}</p>
+                    </div>` : '';
+                
+                shopsList.innerHTML = headerText + mechanics.map(shop => `
+                    <div class="shop-card" style="${!shop.isOnline ? 'opacity: 0.8; border-left-color: #e74c3c;' : ''}">
                         <div class="shop-header">
-                            <div class="shop-name">${shop.name}</div>
+                            <div class="shop-name">${shop.name} ${!shop.isOnline ? '<span style="color: #e74c3c; font-size: 12px;">(OFFLINE)</span>' : '<span style="color: #27ae60; font-size: 12px;">(ONLINE)</span>'}</div>
                             <div class="shop-rating">⭐ ${shop.rating}</div>
                         </div>
                         <div class="shop-details">
@@ -285,12 +298,13 @@
                             <p><strong>Distance:</strong> ${shop.distance} km</p>
                             <p><strong>Address:</strong> ${shop.address}</p>
                             <p><strong>Phone:</strong> ${shop.phone}</p>
-                            <p><strong>Service:</strong> ${service}</p>
-                            <p><strong>Hours:</strong> ${shop.hours}</p>
+                            <p><strong>Services:</strong> ${shop.services ? shop.services.join(', ') : service}</p>
+                            <p><strong>Hours:</strong> ${shop.hours || '24/7'}</p>
+                            ${!shop.isOnline ? '<p style="color: #e74c3c; font-weight: bold;">⚠️ This mechanic is currently offline</p>' : ''}
                         </div>
                         <div class="shop-actions">
-                            <button class="call-btn" onclick="callShop('${shop.phone}')">Call</button>
-                            <button class="select-btn" onclick="selectShop('${shop.name}')">Select</button>
+                            <button class="call-btn" onclick="callShop('${shop.phone}')">📞 Call</button>
+                            <button class="select-btn" onclick="selectShop('${shop.name}')" ${!shop.isOnline ? 'style="background: #95a5a6;" title="Mechanic is offline"' : ''}>✅ Select</button>
                         </div>
                     </div>
                 `).join('');

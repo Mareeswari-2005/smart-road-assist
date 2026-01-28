@@ -20,6 +20,9 @@
         .links a { color: #667eea; text-decoration: none; }
         .links a:hover { text-decoration: underline; }
         .error { color: #ff6b6b; margin-top: 10px; text-align: center; }
+        .user-type-btn { flex: 1; padding: 10px; border: 2px solid #ddd; background: white; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-size: 14px; }
+        .user-type-btn.active { border-color: #667eea; background: #667eea; color: white; }
+        .user-type-btn:hover { border-color: #667eea; }
     </style>
 </head>
 <body>
@@ -30,6 +33,14 @@
         </div>
         
         <form id="loginForm">
+            <div class="form-group">
+                <label>Login as</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" id="userBtn" class="user-type-btn active" onclick="selectUserType('user')">👤 User</button>
+                    <button type="button" id="mechanicBtn" class="user-type-btn" onclick="selectUserType('mechanic')">🔧 Mechanic</button>
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
@@ -52,6 +63,14 @@
     </div>
 
     <script>
+        let selectedUserType = 'user';
+        
+        function selectUserType(type) {
+            selectedUserType = type;
+            document.getElementById('userBtn').classList.toggle('active', type === 'user');
+            document.getElementById('mechanicBtn').classList.toggle('active', type === 'mechanic');
+        }
+        
         // Auto-login check on page load
         document.addEventListener('DOMContentLoaded', async function() {
             const deviceId = localStorage.getItem('deviceId');
@@ -120,6 +139,7 @@
             const data = {
                 email: formData.get('email'),
                 password: formData.get('password'),
+                userType: selectedUserType,
                 deviceId: localStorage.getItem('deviceId') || generateDeviceId()
             };
             

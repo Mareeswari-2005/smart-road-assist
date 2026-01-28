@@ -322,7 +322,7 @@
             console.log(`Searching for ${selectedService} near ${lat}, ${lng}`);
 
             // Make API call to search mechanics
-            fetch(`/api/mechanics/search?lat=${lat}&lng=${lng}&service=${selectedService}`, {
+            fetch(`/api/mechanics/search?lat=${lat}&lng=${lng}&service=${selectedService}&location=${encodeURIComponent(userLocation)}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -375,17 +375,18 @@
             }
 
             resultsList.innerHTML = mechanics.map(shop => `
-                <div class="shop-card">
+                <div class="shop-card" style="${shop.hasService ? 'border-left-color: #27ae60; background: #f8fff8;' : 'border-left-color: #f39c12; background: #fffaf0;'}">
                     <div class="shop-header">
-                        <div class="shop-name">${shop.name}</div>
+                        <div class="shop-name">${shop.name} ${shop.hasService ? '✅' : '⚠️'}</div>
                         <div class="shop-rating">⭐ ${shop.rating}</div>
                     </div>
                     <div class="shop-details">
                         <p><strong>Owner:</strong> ${shop.owner || 'N/A'}</p>
                         <p><strong>Distance:</strong> 📍 ${shop.distance} km</p>
                         <p><strong>Address:</strong> ${shop.address}</p>
-                        <p><strong>Service:</strong> ${getServiceName(selectedService)}</p>
+                        <p><strong>Service:</strong> ${shop.hasService ? getServiceName(selectedService) + ' ✅' : 'Alternative service'}</p>
                         <p><strong>Hours:</strong> ${shop.hours}</p>
+                        ${!shop.hasService ? '<p style="color: #f39c12; font-size: 12px;"><strong>Note:</strong> This mechanic may not offer the exact service but is nearby</p>' : ''}
                     </div>
                     <div class="shop-actions">
                         <button class="call-btn" onclick="callShop('${shop.phone}')">Call</button>
