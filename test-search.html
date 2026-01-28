@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Mechanics Search</title>
+</head>
+<body>
+    <h1>Test Mechanics Search</h1>
+    <button onclick="testSearch()">Test Search</button>
+    <div id="results"></div>
+
+    <script>
+        function testSearch() {
+            const lat = 40.7128;
+            const lng = -74.0060;
+            const service = 'tire-repair';
+            
+            console.log('Testing search...');
+            
+            fetch(`/api/mechanics/search?lat=${lat}&lng=${lng}&service=${service}`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    document.getElementById('results').innerHTML = `
+                        <h2>Found ${data.mechanics.length} mechanics:</h2>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('results').innerHTML = `
+                        <h2>Error:</h2>
+                        <p>${error.message}</p>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>

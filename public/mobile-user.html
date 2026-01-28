@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Assistance - Mobile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .header { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header-content { 
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { 
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-name {
+            color: #34495e;
+            font-weight: 600;
+        }
+        .logout-btn { 
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .container { 
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .emergency-section {
+            margin-bottom: 25px;
+        }
+        .emergency-btn { 
+            width: 100%;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(231, 76, 60, 0.4);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tracking-info {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .distance-info, .eta-info {
+            transition: all 0.3s ease;
+        }
+        
+        .distance-info:hover, .eta-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .location-card { 
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        .location-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .location-input { 
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .location-btn { 
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .services-section {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .services-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .active-request {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .status-badge {
+            background: #f39c12;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .request-details {
+            margin-bottom: 20px;
+        }
+        .request-details h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .request-details p {
+            margin-bottom: 8px;
+            color: #34495e;
+        }
+        .mechanic-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .mechanic-info h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        .call-btn, .cancel-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .call-btn {
+            background: #27ae60;
+            color: white;
+        }
+        .cancel-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .nav-item.active {
+            color: #3498db;
+        }
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .live-tracking {
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border: 2px solid #27ae60;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .eta-display {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .eta-time {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+        .eta-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .tracking-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Mechanic Cards Styles */
+        #mechanicsList {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        #mechanicsList h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        #mechanicsGrid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mechanic-card {
+            background: white;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .mechanic-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .mechanic-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .mechanic-card p {
+            margin-bottom: 8px;
+            color: #34495e;
+            font-size: 14px;
+        }
+        
+        .services {
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .service-tag {
+            background: #e8f4fd;
+            color: #3498db;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .mechanic-card .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🚗 Road Assistance</h1>
+            <div class="header-actions">
+                <span class="user-name" id="userName">User</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="serviceSelection">
+            <div class="emergency-section">
+                <button class="emergency-btn pulse" onclick="emergencyCall()">
+                    🚨 EMERGENCY CALL 911
+                </button>
+            </div>
+            
+            <div class="location-card">
+                <h3>📍 Your Location</h3>
+                <input type="text" class="location-input" id="locationInput" placeholder="Enter your current location">
+                <button class="location-btn" onclick="getCurrentLocation()">
+                    📍 Use Current Location
+                </button>
+            </div>
+
+            <div class="services-section">
+                <h2>Select Service</h2>
+                
+                <div class="find-mechanic-section" style="margin-bottom: 25px;">
+                    <button class="find-mechanic-toggle" onclick="toggleFindMechanic()" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #3498db, #2980b9);
+                        color: white;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 16px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 20px rgba(52, 152, 219, 0.3);
+                        margin-bottom: 15px;
+                    ">
+                        🔍 Find Nearby Mechanics
+                    </button>
+                    
+                    <div id="findMechanicForm" class="hidden" style="
+                        background: white;
+                        padding: 20px;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                        border-left: 4px solid #3498db;
+                    ">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Service Type</label>
+                            <select id="mechanicService" style="
+                                width: 100%;
+                                padding: 12px 15px;
+                                border: 2px solid #e8ecef;
+                                border-radius: 12px;
+                                font-size: 14px;
+                                background: white;
+                            ">
+                                <option value="">Select service</option>
+                                <option value="tire-repair">🛞 Tire Repair</option>
+                                <option value="battery-jump">🔋 Battery Jump Start</option>
+                                <option value="fuel-delivery">⛽ Fuel Delivery</option>
+                                <option value="lockout">🔐 Car Lockout</option>
+                                <option value="towing">🚛 Towing Service</option>
+                                <option value="other">🔧 Other</option>
+                            </select>
+                        </div>
+                        <button onclick="searchMechanics()" id="searchMechanicsBtn" disabled style="
+                            width: 100%;
+                            background: #3498db;
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 12px;
+                            font-size: 14px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        ">
+                            🔍 Search Mechanics
+                        </button>
+                    </div>
+                    
+                    <div id="mechanicsResults" class="hidden" style="margin-top: 15px;"></div>
+                </div>
+                
+                <div class="petrol-stations-section" style="margin-bottom: 25px;">
+                    <button class="petrol-stations-btn" onclick="findNearbyPetrolStations()" style="
+                        width: 100%;
+                        background: linear-gradient(135deg, #27ae60, #2ecc71);
+                        color: white;
+                        border: none;
+                        padding: 18px;
+                        border-radius: 16px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 20px rgba(39, 174, 96, 0.3);
+                    ">
+                        ⛽ Find Nearby Petrol Stations
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="activeRequest" class="hidden">
+            <div class="active-request">
+                <div class="status-badge" id="requestStatus">Searching for mechanic...</div>
+                <div class="request-details">
+                    <h3>Service Request</h3>
+                    <p><strong>Service:</strong> <span id="serviceType"></span></p>
+                    <p><strong>Location:</strong> <span id="requestLocation"></span></p>
+                </div>
+                
+                <div class="mechanic-info" id="mechanicInfo" style="display: none;">
+                    <h4>🔧 Assigned Mechanic</h4>
+                    <p><strong>Name:</strong> <span id="mechanicName"></span></p>
+                    <p><strong>Phone:</strong> <span id="mechanicPhone"></span></p>
+                    
+                    <div class="live-tracking" id="mechanicLocation">
+                        <p style="margin-bottom: 12px; font-weight: 600; color: #333; display: flex; align-items: center;">
+                            <span class="tracking-indicator"></span>
+                            📍 Live Location Tracking
+                        </p>
+                        
+                        <div class="tracking-info" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div class="distance-info" style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #2c3e50;" id="mechanicDistance">Waiting...</div>
+                                <div style="font-size: 12px; color: #666;">Distance</div>
+                            </div>
+                            <div class="eta-info" style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #e74c3c;" id="mechanicETA">Pending</div>
+                                <div style="font-size: 12px; color: #666;">ETA</div>
+                            </div>
+                        </div>
+                        
+                        <div class="status-bar" style="background: linear-gradient(90deg, #fff3cd, #ffeaa7); padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+                            <div id="mechanicStatus" style="color: #856404; font-size: 14px; font-weight: 600;">Waiting for mechanic to share location 📱</div>
+                        </div>
+                        
+                        <div class="tracking-controls" style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                            <div style="width: 8px; height: 8px; background: #ffc107; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                            <span style="font-size: 12px; color: #856404; font-weight: 500;">Location sharing pending</span>
+                        </div>
+                        
+                        <!-- Test button for demo -->
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="simulateMechanicMovement()" style="background: #f39c12; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                🧪 Test Live Tracking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="call-btn" id="callBtn" onclick="callMechanic()" style="display: none;">
+                        📞 Call Mechanic
+                    </button>
+                    <button class="cancel-btn" onclick="cancelRequest()">
+                        ❌ Cancel Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <span class="icon">🏠</span>
+            Home
+        </a>
+        <a href="#" class="nav-item" onclick="showHistory()">
+            <span class="icon">📋</span>
+            History
+        </a>
+        <a href="#" class="nav-item" onclick="showProfile()">
+            <span class="icon">👤</span>
+            Profile
+        </a>
+        <a href="#" class="nav-item" onclick="showHelp()">
+            <span class="icon">❓</span>
+            Help
+        </a>
+    </div>
+    
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Finding nearby mechanics...</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        let currentUser;
+        let activeRequestId = null;
+        let mechanicLocationInterval;
+        let userLocation = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check for saved credentials first
+            const savedEmail = localStorage.getItem('savedEmail');
+            const savedPassword = localStorage.getItem('savedPassword');
+            const deviceId = localStorage.getItem('deviceId');
+            
+            if (savedEmail && savedPassword && deviceId) {
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: savedEmail,
+                            password: savedPassword,
+                            deviceId: deviceId
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        sessionStorage.setItem('token', result.token);
+                        sessionStorage.setItem('user', JSON.stringify(result.user));
+                        
+                        // Continue with normal initialization
+                        currentUser = result.user;
+                        document.getElementById('userName').textContent = currentUser.name;
+                        
+                        const locationInput = document.getElementById('locationInput');
+                        if (!locationInput.value || locationInput.value.includes('undefined')) {
+                            locationInput.value = '';
+                            locationInput.placeholder = 'Enter your current location or use GPS';
+                        }
+                        
+                        initializeSocket();
+                        await checkActiveRequest();
+                        
+                        document.getElementById('mechanicService').addEventListener('change', function() {
+                            const searchBtn = document.getElementById('searchMechanicsBtn');
+                            searchBtn.disabled = !this.value;
+                            searchBtn.style.opacity = this.value ? '1' : '0.6';
+                        });
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Auto-login failed:', error);
+                    localStorage.removeItem('savedEmail');
+                    localStorage.removeItem('savedPassword');
+                    localStorage.removeItem('savedUserType');
+                }
+            }
+            
+            // Original login check
+            const token = sessionStorage.getItem('token');
+            const user = sessionStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/mobile-login';
+                return;
+            }
+            
+            currentUser = JSON.parse(user);
+            document.getElementById('userName').textContent = currentUser.name;
+            
+            const locationInput = document.getElementById('locationInput');
+            if (!locationInput.value || locationInput.value.includes('undefined')) {
+                locationInput.value = '';
+                locationInput.placeholder = 'Enter your current location or use GPS';
+            }
+            
+            initializeSocket();
+            
+            // Check for active request on page load
+            await checkActiveRequest();
+            
+            document.getElementById('mechanicService').addEventListener('change', function() {
+                const searchBtn = document.getElementById('searchMechanicsBtn');
+                searchBtn.disabled = !this.value;
+                searchBtn.style.opacity = this.value ? '1' : '0.6';
+            });
+        });
+
+        async function checkActiveRequest() {
+            try {
+                const response = await fetch('/api/request/user/active-request', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.request) {
+                    activeRequestId = result.request._id;
+                    showActiveRequest(result.request);
+                    
+                    // If mechanic is assigned, show mechanic info
+                    if (result.request.mechanicId && result.request.status !== 'pending') {
+                        showMechanicAssigned({
+                            mechanic: {
+                                name: result.request.mechanicId.name || 'Assigned Mechanic',
+                                phone: result.request.mechanicId.phone || 'Phone not available'
+                            }
+                        });
+                        
+                        // Start location tracking if mechanic is sharing location
+                        if (result.request.mechanicLocation) {
+                            startLocationTracking();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking active request:', error);
+            }
+        }
+
+        function initializeSocket() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                socket.emit('join', { userId: currentUser.id, userType: 'user' });
+            });
+            
+            socket.on('request-accepted', (data) => {
+                showMechanicAssigned(data);
+                // Don't start tracking automatically
+            });
+            
+            socket.on('location-sharing-started', (data) => {
+                // Start tracking when mechanic begins sharing location
+                document.getElementById('mechanicStatus').textContent = 'Mechanic started sharing location 📍';
+                document.querySelector('.status-bar').style.background = 'linear-gradient(90deg, #e8f5e8, #d4edda)';
+                document.getElementById('mechanicStatus').style.color = '#27ae60';
+                document.querySelector('.tracking-controls span').textContent = 'Real-time updates active';
+                document.querySelector('.tracking-controls span').style.color = '#27ae60';
+                document.querySelector('.tracking-controls div').style.background = '#27ae60';
+                startLocationTracking();
+            });
+            
+            socket.on('mechanic-location', (data) => {
+                updateMechanicLocation(data);
+            });
+            
+            socket.on('location-update', (data) => {
+                if (data.forUserId === currentUser.id) {
+                    updateMechanicLocation(data);
+                }
+            });
+            
+            socket.on('job-completed', (data) => {
+                updateMechanicStatus({ status: 'completed' });
+            });
+        }
+
+        function toggleFindMechanic() {
+            const form = document.getElementById('findMechanicForm');
+            form.classList.toggle('hidden');
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        userLocation = { lat, lng };
+                        
+                        // Convert coordinates to address
+                        const address = await getAddressFromCoords(lat, lng);
+                        document.getElementById('locationInput').value = address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    },
+                    (error) => {
+                        alert('Unable to get location. Please enter manually.');
+                    }
+                );
+            }
+        }
+        
+        // Convert coordinates to address using Google Maps API (free alternative)
+        async function getAddressFromCoords(lat, lng) {
+            try {
+                // Using Nominatim (OpenStreetMap) - free reverse geocoding
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
+                const data = await response.json();
+                if (data && data.display_name) {
+                    return data.display_name;
+                }
+            } catch (error) {
+                console.log('Geocoding failed, using coordinates');
+            }
+            return null;
+        }
+
+        function searchMechanics() {
+            const service = document.getElementById('mechanicService').value;
+            const location = document.getElementById('locationInput').value;
+            
+            if (!service || !location) {
+                alert('Please select a service and enter your location');
+                return;
+            }
+            
+            // Validate location format
+            if (!location.includes(',') && !userLocation) {
+                alert('Please enter a valid location (e.g., "City, State" or use GPS)');
+                return;
+            }
+            
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            // Search for mechanics first
+            fetch(`/api/mechanic/search?location=${encodeURIComponent(location)}&service=${encodeURIComponent(service)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                if (data.mechanics && data.mechanics.length > 0) {
+                    showMechanicsList(data.mechanics, service, location);
+                } else {
+                    alert('No mechanics available in your area. Please try a different location.');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                console.error('Search error:', error);
+                alert('Error searching for mechanics. Please try again.');
+            });
+        }
+        
+        function showMechanicsList(mechanics, service, location) {
+            document.getElementById('serviceSelection').classList.add('hidden');
+            
+            // Create mechanics list if it doesn't exist
+            let mechanicsContainer = document.getElementById('mechanicsList');
+            if (!mechanicsContainer) {
+                mechanicsContainer = document.createElement('div');
+                mechanicsContainer.id = 'mechanicsList';
+                mechanicsContainer.innerHTML = `
+                    <div class="container">
+                        <h2>Available Mechanics</h2>
+                        <div id="mechanicsGrid"></div>
+                        <button onclick="goBackToSearch()" class="btn btn-secondary">Back to Search</button>
+                    </div>
+                `;
+                document.body.appendChild(mechanicsContainer);
+            }
+            
+            mechanicsContainer.classList.remove('hidden');
+            
+            const grid = document.getElementById('mechanicsGrid');
+            grid.innerHTML = mechanics.map(mechanic => {
+                const stars = generateStars(mechanic.rating);
+                return `
+                    <div class="mechanic-card" onclick="selectMechanic('${mechanic._id}', '${mechanic.name}')">
+                        <h3>${mechanic.name}</h3>
+                        <p><strong>📍</strong> ${mechanic.address}</p>
+                        <p><strong>📞</strong> ${mechanic.phone}</p>
+                        <div style="display: flex; align-items: center; margin: 8px 0;">
+                            <strong>⭐</strong> 
+                            <span style="margin-left: 5px;">${stars} ${mechanic.rating} (${mechanic.totalRatings || 0} reviews)</span>
+                        </div>
+                        <p><strong>🕒</strong> ${mechanic.hours}</p>
+                        <p><strong>📏</strong> ${mechanic.distance} away</p>
+                        <div class="services">
+                            ${mechanic.services.slice(0, 3).map(s => `<span class="service-tag">${s}</span>`).join('')}
+                        </div>
+                        <button class="btn btn-primary">Select This Mechanic</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '⭐';
+            }
+            if (hasHalfStar) {
+                stars += '🌟';
+            }
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '☆';
+            }
+            
+            return stars;
+        }
+        
+        function selectMechanic(mechanicId, mechanicName) {
+            const service = document.getElementById('mechanicService').value;
+            const location = document.getElementById('locationInput').value;
+            
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            // Create request with selected mechanic
+            fetch('/api/request/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    serviceType: service,
+                    location: location,
+                    mechanicId: mechanicId,
+                    description: `${service} service requested`
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                if (data.request) {
+                    document.getElementById('mechanicsList').classList.add('hidden');
+                    showActiveRequest(data.request);
+                    activeRequestId = data.request._id;
+                    alert('✅ Request sent to mechanic successfully!');
+                } else {
+                    alert(data.message || 'Failed to create request');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                console.error('Request error:', error);
+                alert('Error creating request. Please try again.');
+            });
+        }
+        
+        function goBackToSearch() {
+            document.getElementById('mechanicsList').classList.add('hidden');
+            document.getElementById('serviceSelection').classList.remove('hidden');
+        }
+
+        function showActiveRequest(request) {
+            document.getElementById('serviceSelection').classList.add('hidden');
+            document.getElementById('activeRequest').classList.remove('hidden');
+            
+            document.getElementById('serviceType').textContent = getServiceName(request.serviceType);
+            document.getElementById('requestLocation').textContent = request.locationAddress || request.location || 'Location not available';
+            document.getElementById('requestStatus').textContent = 'Waiting for mechanic to accept...';
+            
+            // Start polling for mechanic assignment
+            setTimeout(() => {
+                if (activeRequestId && document.getElementById('requestStatus').textContent.includes('Waiting')) {
+                    document.getElementById('requestStatus').textContent = 'Still searching... This may take a few minutes';
+                }
+            }, 30000);
+        }
+
+        function showMechanicAssigned(data) {
+            document.getElementById('requestStatus').textContent = 'Mechanic Assigned ✅';
+            document.getElementById('requestStatus').style.background = '#27ae60';
+            
+            document.getElementById('mechanicName').textContent = data.mechanic.name;
+            document.getElementById('mechanicPhone').textContent = data.mechanic.phone;
+            
+            document.getElementById('mechanicInfo').style.display = 'block';
+            document.getElementById('callBtn').style.display = 'inline-block';
+            
+            // Show waiting for location sharing message
+            document.getElementById('mechanicDistance').textContent = 'Waiting for mechanic to share location...';
+            document.getElementById('mechanicETA').textContent = 'Pending';
+            document.getElementById('mechanicStatus').textContent = 'Mechanic will share location when ready 📱';
+            
+            // Don't start tracking automatically - wait for mechanic to share location
+        }
+
+        function startLocationTracking() {
+            // Clear any existing interval
+            if (mechanicLocationInterval) {
+                clearInterval(mechanicLocationInterval);
+            }
+            
+            // Request immediate location update
+            if (activeRequestId) {
+                socket.emit('requestMechanicLocation', { requestId: activeRequestId });
+            }
+            
+            // Set up continuous tracking every 5 seconds (like Uber/Ola)
+            mechanicLocationInterval = setInterval(() => {
+                if (activeRequestId) {
+                    socket.emit('requestMechanicLocation', { requestId: activeRequestId });
+                }
+            }, 5000);
+            
+            console.log('Real-time location tracking started');
+        }
+
+        function updateMechanicLocation(data) {
+            console.log('Location update received:', data);
+            
+            if (!userLocation) {
+                console.log('User location not available');
+                return;
+            }
+            
+            let mechanicLat, mechanicLng;
+            
+            // Handle different data formats
+            if (data.mechanicLocation) {
+                mechanicLat = data.mechanicLocation.lat;
+                mechanicLng = data.mechanicLocation.lng;
+            } else if (data.location) {
+                mechanicLat = data.location.lat;
+                mechanicLng = data.location.lng;
+            } else {
+                console.log('No valid location data');
+                return;
+            }
+            
+            const mechanicPos = { lat: mechanicLat, lng: mechanicLng };
+            const distance = calculateDistance(userLocation, mechanicPos);
+            const eta = calculateETA(distance);
+            
+            // Update distance display with animation
+            const distanceEl = document.getElementById('mechanicDistance');
+            const etaEl = document.getElementById('mechanicETA');
+            const statusEl = document.getElementById('mechanicStatus');
+            
+            // Animate the update
+            distanceEl.style.transition = 'all 0.3s ease';
+            etaEl.style.transition = 'all 0.3s ease';
+            
+            distanceEl.textContent = `${distance.toFixed(1)} km away`;
+            etaEl.textContent = eta;
+            
+            // Update status based on distance (like Uber/Ola)
+            if (distance < 0.1) {
+                statusEl.textContent = 'Mechanic has arrived! 🎯';
+                statusEl.style.color = '#27ae60';
+                statusEl.style.fontWeight = 'bold';
+                // Stop tracking when arrived
+                clearInterval(mechanicLocationInterval);
+            } else if (distance < 0.5) {
+                statusEl.textContent = 'Arriving in 1-2 minutes 🚗';
+                statusEl.style.color = '#e74c3c';
+                statusEl.style.fontWeight = 'bold';
+            } else if (distance < 1) {
+                statusEl.textContent = 'Very close - almost there! 🔥';
+                statusEl.style.color = '#f39c12';
+                statusEl.style.fontWeight = '600';
+            } else if (distance < 3) {
+                statusEl.textContent = 'Nearby - on the way 🛣️';
+                statusEl.style.color = '#3498db';
+                statusEl.style.fontWeight = '600';
+            } else {
+                statusEl.textContent = 'En route to your location 🚗';
+                statusEl.style.color = '#27ae60';
+                statusEl.style.fontWeight = 'normal';
+            }
+            
+            // Add pulse animation for very close distances
+            if (distance < 1) {
+                etaEl.style.animation = 'pulse 1s infinite';
+            } else {
+                etaEl.style.animation = 'none';
+            }
+            
+            // Update timestamp
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            // Show last update time
+            let updateTimeEl = document.getElementById('lastUpdate');
+            if (!updateTimeEl) {
+                updateTimeEl = document.createElement('div');
+                updateTimeEl.id = 'lastUpdate';
+                updateTimeEl.style.cssText = 'font-size: 11px; color: #666; margin-top: 5px;';
+                document.getElementById('mechanicLocation').appendChild(updateTimeEl);
+            }
+            updateTimeEl.textContent = `Last updated: ${timeStr}`;
+        }
+
+        function updateMechanicStatus(data) {
+            const statusEl = document.getElementById('mechanicStatus');
+            const etaEl = document.getElementById('mechanicETA');
+            
+            switch(data.status) {
+                case 'arrived':
+                    statusEl.textContent = 'Mechanic has arrived! 🎯';
+                    statusEl.style.color = '#27ae60';
+                    etaEl.textContent = 'Arrived';
+                    clearInterval(mechanicLocationInterval);
+                    break;
+                case 'working':
+                    statusEl.textContent = 'Working on your vehicle 🔧';
+                    statusEl.style.color = '#3498db';
+                    break;
+                case 'completed':
+                    statusEl.textContent = 'Service completed ✅';
+                    statusEl.style.color = '#27ae60';
+                    showRatingModal();
+                    break;
+            }
+        }
+
+        function calculateDistance(pos1, pos2) {
+            const R = 6371;
+            const dLat = (pos2.lat - pos1.lat) * Math.PI / 180;
+            const dLon = (pos2.lng - pos1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(pos1.lat * Math.PI / 180) * Math.cos(pos2.lat * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function calculateETA(distance) {
+            // More realistic ETA calculation based on traffic conditions
+            let avgSpeed;
+            
+            if (distance < 1) {
+                avgSpeed = 15; // Slower in final approach
+            } else if (distance < 5) {
+                avgSpeed = 25; // City driving
+            } else {
+                avgSpeed = 35; // Highway/faster roads
+            }
+            
+            const timeInHours = distance / avgSpeed;
+            const timeInMinutes = Math.round(timeInHours * 60);
+            
+            if (timeInMinutes < 1) return '< 1 min';
+            if (timeInMinutes === 1) return '1 min';
+            if (timeInMinutes < 60) return `${timeInMinutes} mins`;
+            
+            const hours = Math.floor(timeInMinutes / 60);
+            const mins = timeInMinutes % 60;
+            
+            if (mins === 0) return `${hours}h`;
+            return `${hours}h ${mins}m`;
+        }
+
+        function getServiceName(serviceType) {
+            const services = {
+                'tire-repair': '🛞 Tire Repair',
+                'battery-jump': '🔋 Battery Jump Start',
+                'fuel-delivery': '⛽ Fuel Delivery',
+                'lockout': '🔐 Car Lockout',
+                'towing': '🚛 Towing Service',
+                'other': '🔧 Other'
+            };
+            return services[serviceType] || serviceType;
+        }
+
+        function callMechanic() {
+            const phone = document.getElementById('mechanicPhone').textContent;
+            window.location.href = `tel:${phone}`;
+        }
+
+        function cancelRequest() {
+            if (confirm('Are you sure you want to cancel this request?')) {
+                clearInterval(mechanicLocationInterval);
+                
+                fetch(`/api/request/${activeRequestId}/cancel`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        // Emit socket event to notify mechanic immediately
+                        if (socket && data.request && data.request.mechanicId) {
+                            socket.emit('request-cancelled', {
+                                requestId: activeRequestId,
+                                mechanicId: data.request.mechanicId,
+                                customerName: currentUser.name,
+                                serviceType: data.request.serviceType,
+                                message: `Customer ${currentUser.name} has cancelled the service request`
+                            });
+                        }
+                        
+                        alert('❌ Request cancelled successfully');
+                        document.getElementById('activeRequest').classList.add('hidden');
+                        document.getElementById('serviceSelection').classList.remove('hidden');
+                        activeRequestId = null;
+                    } else {
+                        alert('Error cancelling request');
+                    }
+                })
+                .catch(error => {
+                    console.error('Cancel request error:', error);
+                    alert('Error cancelling request');
+                });
+            }
+        }
+
+        function emergencyCall() {
+            window.location.href = 'tel:911';
+        }
+
+        function showHistory() {
+            window.location.href = '/mobile-history';
+        }
+
+        function showProfile() {
+            window.location.href = '/mobile-profile';
+        }
+
+        function showHelp() {
+            window.location.href = '/mobile-help';
+        }
+
+        function logout() {
+            clearInterval(mechanicLocationInterval);
+            sessionStorage.clear();
+            localStorage.removeItem('savedEmail');
+            localStorage.removeItem('savedPassword');
+            localStorage.removeItem('savedUserType');
+            window.location.href = '/mobile-login';
+        }
+        
+        function showRatingModal() {
+            const modal = document.createElement('div');
+            modal.id = 'ratingModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.7); display: flex; align-items: center;
+                justify-content: center; z-index: 2000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; text-align: center;">
+                    <h3 style="color: #2c3e50; margin-bottom: 20px;">⭐ Rate Your Experience</h3>
+                    <p style="color: #666; margin-bottom: 25px;">How was the service provided by ${document.getElementById('mechanicName').textContent}?</p>
+                    
+                    <div id="starRating" style="margin-bottom: 20px;">
+                        <span class="star" onclick="selectRating(1)" style="font-size: 50px; cursor: pointer; margin: 0 3px; transition: all 0.2s;">☆</span>
+                        <span class="star" onclick="selectRating(2)" style="font-size: 50px; cursor: pointer; margin: 0 3px; transition: all 0.2s;">☆</span>
+                        <span class="star" onclick="selectRating(3)" style="font-size: 50px; cursor: pointer; margin: 0 3px; transition: all 0.2s;">☆</span>
+                        <span class="star" onclick="selectRating(4)" style="font-size: 50px; cursor: pointer; margin: 0 3px; transition: all 0.2s;">☆</span>
+                        <span class="star" onclick="selectRating(5)" style="font-size: 50px; cursor: pointer; margin: 0 3px; transition: all 0.2s;">☆</span>
+                    </div>
+                    <p id="ratingText" style="color: #666; margin-bottom: 20px; font-weight: 600;">Tap a star to rate</p>
+                    
+                    <textarea id="reviewText" placeholder="Write a review (optional)" style="width: 100%; padding: 10px; border: 2px solid #e8ecef; border-radius: 8px; margin-bottom: 20px; resize: vertical; min-height: 80px;"></textarea>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="submitRating()" id="submitRatingBtn" disabled style="flex: 1; background: #ccc; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: not-allowed;">
+                            Submit Rating
+                        </button>
+                        <button onclick="skipRating()" style="flex: 1; background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Skip
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            window.selectedRating = 0;
+        }
+        
+        function selectRating(rating) {
+            window.selectedRating = rating;
+            const stars = document.querySelectorAll('#ratingModal .star');
+            const ratingTexts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+            
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.innerHTML = '★'; // Filled star
+                    star.style.color = '#FFD700'; // Gold color
+                    star.style.textShadow = '0 0 3px rgba(255, 215, 0, 0.5)';
+                } else {
+                    star.innerHTML = '☆'; // Empty star
+                    star.style.color = '#ddd';
+                    star.style.textShadow = 'none';
+                }
+            });
+            
+            // Update rating text
+            document.getElementById('ratingText').textContent = `${rating} star${rating > 1 ? 's' : ''} - ${ratingTexts[rating]}`;
+            document.getElementById('ratingText').style.color = '#FFD700';
+            
+            // Enable submit button
+            const submitBtn = document.getElementById('submitRatingBtn');
+            submitBtn.disabled = false;
+            submitBtn.style.background = '#27ae60';
+            submitBtn.style.cursor = 'pointer';
+        }
+        
+        function submitRating() {
+            const rating = window.selectedRating;
+            const review = document.getElementById('reviewText').value;
+            
+            if (!rating) {
+                alert('Please select a rating');
+                return;
+            }
+            
+            fetch(`/api/request/${activeRequestId}/rate`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ rating, review })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('⭐ Thank you for your rating!');
+                    closeRatingModal();
+                } else {
+                    alert('Error submitting rating');
+                }
+            })
+            .catch(error => {
+                console.error('Rating error:', error);
+                alert('Error submitting rating');
+            });
+        }
+        
+        function skipRating() {
+            closeRatingModal();
+        }
+        
+        function closeRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            setTimeout(() => {
+                document.getElementById('activeRequest').classList.add('hidden');
+                document.getElementById('serviceSelection').classList.remove('hidden');
+                activeRequestId = null;
+            }, 1000);
+        }
+        
+        function findNearbyPetrolStations() {
+            const location = document.getElementById('locationInput').value;
+            
+            if (!location && !userLocation) {
+                alert('Please enter your location or use GPS first');
+                return;
+            }
+            
+            let searchLocation;
+            if (userLocation) {
+                searchLocation = `${userLocation.lat},${userLocation.lng}`;
+            } else {
+                searchLocation = location;
+            }
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.7); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 15px; border-radius: 15px; max-width: 95vw; width: 450px; max-height: 90vh; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #333; margin: 0;">⛽ Nearby Petrol Stations</h3>
+                        <button id="closePetrolMap" style="background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+                    </div>
+                    
+                    <div style="width: 100%; height: 400px; border-radius: 10px; overflow: hidden; border: 2px solid #e8ecef;">
+                        <iframe 
+                            src="https://maps.google.com/maps?q=petrol+stations+near+${encodeURIComponent(searchLocation)}&output=embed&z=14"
+                            width="100%" 
+                            height="100%" 
+                            style="border: 0;" 
+                            allowfullscreen="" 
+                            loading="lazy">
+                        </iframe>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 10px; color: #666; font-size: 12px;">
+                        📍 Showing petrol stations near your location
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            document.getElementById('closePetrolMap').addEventListener('click', function() {
+                document.body.removeChild(modal);
+            });
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+        }
+        
+        function openMaps(address) {
+            const encodedAddress = encodeURIComponent(address);
+            window.open(`https://www.google.com/maps/search/${encodedAddress}`, '_blank');
+        }
+
+        function simulateMechanicMovement() {
+            if (!userLocation) {
+                alert('Please enable location first');
+                return;
+            }
+            
+            // Simulate mechanic acceptance first if not already assigned
+            if (!document.getElementById('mechanicInfo').style.display || document.getElementById('mechanicInfo').style.display === 'none') {
+                showMechanicAssigned({
+                    mechanic: {
+                        name: 'Demo Mechanic',
+                        phone: '+1234567890'
+                    }
+                });
+            }
+            
+            // Simulate location sharing started event
+            setTimeout(() => {
+                socket.emit('location-sharing-started', { requestId: activeRequestId });
+            }, 1000);
+            
+            let mechanicLat = userLocation.lat + 0.01; // Start 1km away
+            let mechanicLng = userLocation.lng + 0.01;
+            
+            const moveInterval = setInterval(() => {
+                // Move mechanic closer to user
+                const latDiff = userLocation.lat - mechanicLat;
+                const lngDiff = userLocation.lng - mechanicLng;
+                
+                mechanicLat += latDiff * 0.15; // Move 15% closer each update
+                mechanicLng += lngDiff * 0.15;
+                
+                // Add some random movement to simulate real driving
+                mechanicLat += (Math.random() - 0.5) * 0.0001;
+                mechanicLng += (Math.random() - 0.5) * 0.0001;
+                
+                // Simulate location update
+                updateMechanicLocation({
+                    mechanicLocation: {
+                        lat: mechanicLat,
+                        lng: mechanicLng
+                    },
+                    requestId: activeRequestId
+                });
+                
+                // Stop when very close
+                const distance = calculateDistance(userLocation, { lat: mechanicLat, lng: mechanicLng });
+                if (distance < 0.05) {
+                    clearInterval(moveInterval);
+                    // Simulate arrival and then completion
+                    setTimeout(() => {
+                        updateMechanicStatus({ status: 'arrived' });
+                        setTimeout(() => {
+                            updateMechanicStatus({ status: 'working' });
+                            setTimeout(() => {
+                                updateMechanicStatus({ status: 'completed' });
+                            }, 3000);
+                        }, 2000);
+                    }, 2000);
+                }
+            }, 2000); // Update every 2 seconds for demo
+            
+            alert('🚗 Demo: Mechanic will start sharing location, approach, and complete service. You\'ll be asked to rate the service!');
+        }
+    </script>
+</body>
+</html>

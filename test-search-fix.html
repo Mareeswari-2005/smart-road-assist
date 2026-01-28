@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mechanic Search Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 10px 0; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Mechanic Search Fix</h1>
+        
+        <div class="test-section">
+            <h3>Test API Endpoint</h3>
+            <button onclick="testAPI()">Test Search API</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Quick Links</h3>
+            <button onclick="window.open('/find-mechanic.html', '_blank')">Open Desktop Find Mechanic</button>
+            <button onclick="window.open('/mobile-find-mechanic', '_blank')">Open Mobile Find Mechanic</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Instructions</h3>
+            <p><strong>For testing:</strong></p>
+            <ul>
+                <li>Use coordinates: <code>40.7128, -74.0060</code> (NYC area where sample mechanics are located)</li>
+                <li>Try services: tire-repair, battery-jump, fuel-delivery, towing, lockout</li>
+                <li>The search should now return real mechanics from the database</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                const response = await fetch('/api/mechanics/search?lat=40.7128&lng=-74.0060&service=tire-repair');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h4>✅ API Test Successful!</h4>
+                        <p><strong>Found ${data.mechanics.length} mechanics</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h4>❌ API Test Failed</h4>
+                        <p>Error: ${data.message}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>❌ API Test Error</h4>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

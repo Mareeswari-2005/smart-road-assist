@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .header { background: #667eea; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .logout-btn { background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .welcome { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .request-form { background: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .btn:hover { background: #5a6fd8; }
+        .requests { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .request-item { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .status { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .status.pending { background: #fff3cd; color: #856404; }
+        .status.accepted { background: #d4edda; color: #155724; }
+        .status.completed { background: #cce5ff; color: #004085; }
+        .status.cancelled { background: #f8d7da; color: #721c24; }
+        .error { color: #ff6b6b; margin-top: 10px; }
+        .success { color: #4ecdc4; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 User Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Welcome, <span id="userName"></span>!</h2>
+            <p>Request roadside assistance whenever you need help.</p>
+        </div>
+
+        <div class="request-form">
+            <h3>Request Service</h3>
+            
+            <form id="serviceForm">
+                <div class="form-group">
+                    <label for="serviceType">Service Type</label>
+                    <select id="serviceType" name="serviceType" required>
+                        <option value="">Select service</option>
+                        <option value="tire-repair">Tire Repair</option>
+                        <option value="battery-jump">Battery Jump Start</option>
+                        <option value="fuel-delivery">Fuel Delivery</option>
+                        <option value="towing">Towing Service</option>
+                        <option value="lockout">Car Lockout</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Describe your problem..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="urgency">Urgency Level</label>
+                    <select id="urgency" name="urgency" required>
+                        <option value="">Select urgency</option>
+                        <option value="low">Low - Can wait</option>
+                        <option value="medium">Medium - Need help soon</option>
+                        <option value="high">High - Emergency</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" id="latitude" name="latitude" step="any" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" id="longitude" name="longitude" step="any" required>
+                </div>
+                
+                <button type="button" onclick="getCurrentLocation()" class="btn" style="background: #4ecdc4; margin-bottom: 10px;">Get Current Location</button>
+                <br>
+                <button type="submit" class="btn">Request Service</button>
+                
+                <div class="error" id="requestError" style="display: none;"></div>
+                <div class="success" id="requestSuccess" style="display: none;"></div>
+            </form>
+        </div>
+
+        <div class="requests">
+            <h3>My Requests</h3>
+            <div id="requestsList">
+                <p>Loading requests...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        let user;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = JSON.parse(localStorage.getItem('user'));
+            if (!user || user.userType !== 'user') {
+                window.location.href = '/login';
+                return;
+            }
+
+            document.getElementById('userName').textContent = user.name;
+            
+            // Initialize socket
+            socket = io();
+            socket.emit('join-room', user.id);
+            
+            // Listen for request status updates
+            socket.on('request-status-update', (data) => {
+                loadRequests(); // Reload requests when status updates
+            });
+            
+            loadRequests();
+        });
+
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                serviceType: formData.get('serviceType'),
+                description: formData.get('description'),
+                urgency: formData.get('urgency'),
+                location: {
+                    lat: parseFloat(formData.get('latitude')),
+                    lng: parseFloat(formData.get('longitude'))
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/request/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('requestSuccess').textContent = 'Service request created successfully!';
+                    document.getElementById('requestSuccess').style.display = 'block';
+                    document.getElementById('requestError').style.display = 'none';
+                    
+                    // Reset form
+                    document.getElementById('serviceForm').reset();
+                    
+                    // Reload requests
+                    loadRequests();
+                } else {
+                    document.getElementById('requestError').textContent = result.message;
+                    document.getElementById('requestError').style.display = 'block';
+                    document.getElementById('requestSuccess').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('requestError').textContent = 'Network error. Please try again.';
+                document.getElementById('requestError').style.display = 'block';
+                document.getElementById('requestSuccess').style.display = 'none';
+            }
+        });
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                }, (error) => {
+                    alert('Error getting location: ' + error.message);
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await fetch('/api/request/my-requests', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const requests = await response.json();
+                displayRequests(requests);
+            } catch (error) {
+                document.getElementById('requestsList').innerHTML = '<p>Error loading requests</p>';
+            }
+        }
+
+        function displayRequests(requests) {
+            const container = document.getElementById('requestsList');
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<p>No requests yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = requests.map(request => `
+                <div class="request-item">
+                    <h4>${request.serviceType.replace('-', ' ').toUpperCase()}</h4>
+                    <p><strong>Mechanic:</strong> ${request.mechanicId ? request.mechanicId.name + ' (' + request.mechanicId.phone + ')' : 'Not assigned'}</p>
+                    <p><strong>Description:</strong> ${request.description}</p>
+                    <p><strong>Urgency:</strong> ${request.urgency}</p>
+                    <p><strong>Estimated Cost:</strong> ₹${request.estimatedCost}</p>
+                    <p><strong>Created:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
+                    <span class="status ${request.status}">${request.status.toUpperCase()}</span>
+                    ${request.status === 'pending' ? `
+                        <button onclick="cancelRequest('${request._id}')" class="btn" style="background: #ff6b6b; margin-left: 10px;">Cancel</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function cancelRequest(requestId) {
+            if (!confirm('Are you sure you want to cancel this request?')) return;
+            
+            try {
+                const response = await fetch(`/api/request/${requestId}/cancel`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    loadRequests(); // Reload requests
+                }
+            } catch (error) {
+                alert('Error cancelling request');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

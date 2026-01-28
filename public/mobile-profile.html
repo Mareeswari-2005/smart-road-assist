@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Profile - Smart Road Assistance</title>
+    <meta name="theme-color" content="#667eea">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8f9fa;
+            padding-bottom: 80px;
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; 
+            padding: 20px 15px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header-content { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .back-btn { 
+            background: rgba(255,255,255,0.2);
+            border: none; 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .container { 
+            padding: 20px 15px; 
+            max-width: 500px; 
+            margin: 0 auto;
+        }
+        .profile-header {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 15px;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .profile-type {
+            color: #666;
+            font-size: 14px;
+        }
+        .profile-section {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        .form-input:disabled {
+            background: #f8f9fa;
+            color: #666;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: white; 
+            padding: 12px 0;
+            border-top: 1px solid #e8ecef;
+            display: flex; 
+            justify-content: space-around;
+            z-index: 1000;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none; 
+            color: #666; 
+            font-size: 11px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+        .nav-item.active { 
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .nav-item .icon { 
+            font-size: 20px; 
+            margin-bottom: 4px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <h1>👤 Profile</h1>
+            <div></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loadingSection" class="loading">
+            <div>Loading profile...</div>
+        </div>
+
+        <div id="profileContent" style="display: none;">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">👤</div>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <div class="profile-type" id="profileType">User</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRequests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedRequests">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="section-title">
+                    📝 Personal Information
+                </div>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="userEmail" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-input" id="userPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">User Type</label>
+                        <input type="text" class="form-input" id="userTypeField" disabled>
+                    </div>
+                    <button type="submit" class="btn" id="updateBtn">Update Profile</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <div class="section-title">
+                    🔒 Account Actions
+                </div>
+                <button class="btn btn-secondary" onclick="logout()" style="margin-bottom: 10px;">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/mobile-user" class="nav-item">
+            <span class="icon">🏠</span>
+            Home
+        </a>
+        <a href="/mobile-history" class="nav-item">
+            <span class="icon">📋</span>
+            History
+        </a>
+        <a href="#" class="nav-item active">
+            <span class="icon">👤</span>
+            Profile
+        </a>
+        <a href="/mobile-help" class="nav-item">
+            <span class="icon">❓</span>
+            Help
+        </a>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = sessionStorage.getItem('token');
+            const user = sessionStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/mobile-login';
+                return;
+            }
+            
+            currentUser = JSON.parse(user);
+            loadProfile();
+            loadStats();
+        });
+
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const profile = await response.json();
+                    displayProfile(profile);
+                } else {
+                    // Use cached user data if API fails
+                    displayProfile(currentUser);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                displayProfile(currentUser);
+            }
+        }
+
+        function displayProfile(profile) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'block';
+
+            // Update profile header
+            document.getElementById('profileName').textContent = profile.name || 'Unknown User';
+            document.getElementById('profileType').textContent = profile.userType === 'mechanic' ? 'Mechanic' : 'User';
+            document.getElementById('profileAvatar').textContent = profile.userType === 'mechanic' ? '🔧' : '👤';
+
+            // Update form fields
+            document.getElementById('userName').value = profile.name || '';
+            document.getElementById('userEmail').value = profile.email || '';
+            document.getElementById('userPhone').value = profile.phone || '';
+            document.getElementById('userTypeField').value = profile.userType === 'mechanic' ? 'Mechanic' : 'User';
+
+            // Add form submit handler
+            document.getElementById('profileForm').addEventListener('submit', updateProfile);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/request/history', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const requests = result.requests || [];
+                    
+                    document.getElementById('totalRequests').textContent = requests.length;
+                    document.getElementById('completedRequests').textContent = 
+                        requests.filter(r => r.status === 'completed').length;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function updateProfile(event) {
+            event.preventDefault();
+            
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.disabled = true;
+            updateBtn.textContent = 'Updating...';
+
+            const formData = {
+                name: document.getElementById('userName').value,
+                phone: document.getElementById('userPhone').value
+            };
+
+            try {
+                const response = await fetch('/api/user/profile', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Update stored user data
+                    const updatedUser = { ...currentUser, ...result };
+                    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                    currentUser = updatedUser;
+                    
+                    alert('✅ Profile updated successfully!');
+                    displayProfile(updatedUser);
+                } else {
+                    alert('❌ ' + (result.message || 'Failed to update profile'));
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('❌ Error updating profile. Please try again.');
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Update Profile';
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('user');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/mobile-login';
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

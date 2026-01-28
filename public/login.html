@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h2 { color: #333; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: bold; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        .btn:hover { background: #5a6fd8; }
+        .links { text-align: center; margin-top: 20px; }
+        .links a { color: #667eea; text-decoration: none; }
+        .links a:hover { text-decoration: underline; }
+        .error { color: #ff6b6b; margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Sign in to your account</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn">Sign In</button>
+            
+            <div class="error" id="error" style="display: none;"></div>
+        </form>
+        
+        <div class="links">
+            <p>Don't have an account? <a href="/register">Sign up</a></p>
+            <p><a href="/">Back to Home</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-login check on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            const deviceId = localStorage.getItem('deviceId');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            // If already have a valid token, redirect to dashboard
+            if (token) {
+                try {
+                    const response = await fetch('/api/auth/verify', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.user.userType === 'mechanic') {
+                            window.location.href = '/mechanic-dashboard';
+                        } else {
+                            window.location.href = '/user-dashboard';
+                        }
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Token verification failed');
+                }
+            }
+            
+            // Try auto-login with device ID
+            if (deviceId && !token) {
+                try {
+                    const response = await fetch('/api/auth/auto-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ deviceId })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        // Store tokens
+                        sessionStorage.setItem('token', result.token);
+                        sessionStorage.setItem('user', JSON.stringify(result.user));
+                        localStorage.setItem('token', result.token);
+                        localStorage.setItem('user', JSON.stringify(result.user));
+                        
+                        // Redirect to appropriate dashboard
+                        if (result.user.userType === 'mechanic') {
+                            if (result.needsShopSetup) {
+                                window.location.href = '/shop-setup';
+                            } else {
+                                window.location.href = '/mechanic-dashboard';
+                            }
+                        } else {
+                            window.location.href = '/user-dashboard';
+                        }
+                    }
+                } catch (error) {
+                    console.log('Auto-login failed:', error);
+                }
+            }
+        });
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                deviceId: localStorage.getItem('deviceId') || generateDeviceId()
+            };
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('deviceId', data.deviceId);
+                    
+                    // Store in both session and local storage for persistence
+                    sessionStorage.setItem('token', result.token);
+                    sessionStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    if (result.user.userType === 'mechanic') {
+                        if (result.needsShopSetup) {
+                            window.location.href = '/shop-setup';
+                        } else {
+                            window.location.href = '/mechanic-dashboard';
+                        }
+                    } else {
+                        window.location.href = '/user-dashboard';
+                    }
+                } else {
+                    document.getElementById('error').textContent = result.message;
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('error').textContent = 'Network error. Please try again.';
+                document.getElementById('error').style.display = 'block';
+            }
+        });
+        
+        function generateDeviceId() {
+            return 'device_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Mechanic - Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 400px; 
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #27ae60;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .search-form {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+        .search-btn {
+            width: 100%;
+            padding: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .search-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .search-btn:not(:disabled):hover {
+            background: #229954;
+        }
+        .shops-section {
+            display: none;
+        }
+        .shop-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #27ae60;
+        }
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .shop-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .shop-rating {
+            background: #f39c12;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .shop-details p {
+            margin-bottom: 6px;
+            color: #666;
+            font-size: 14px;
+        }
+        .shop-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .call-btn, .select-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .call-btn {
+            background: #3498db;
+            color: white;
+        }
+        .select-btn {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Find Mechanic</h1>
+            <p>Get help when you need it</p>
+        </div>
+
+        <div class="search-form">
+            <div class="form-group">
+                <label for="location">Your Location</label>
+                <input type="text" id="location" class="form-input" placeholder="Enter coordinates (lat, lng) or click button below" oninput="checkForm()">
+                <button type="button" onclick="useCurrentLocation()" style="margin-top: 10px; padding: 8px 12px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 12px; cursor: pointer;">📍 Use Current Location</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="service">Service Needed</label>
+                <select id="service" class="form-select" onchange="checkForm()">
+                    <option value="">Select service type</option>
+                    <option value="towing">Towing Service</option>
+                    <option value="battery">Battery Jump Start</option>
+                    <option value="tire">Tire Change</option>
+                    <option value="fuel">Fuel Delivery</option>
+                    <option value="lockout">Car Lockout</option>
+                    <option value="engine">Engine Repair</option>
+                </select>
+            </div>
+            
+            <button id="searchBtn" class="search-btn" onclick="searchMechanics()" disabled>
+                Search Mechanics
+            </button>
+        </div>
+
+        <div class="shops-section" id="shopsSection">
+            <h2 style="margin-bottom: 20px; color: #333;">Available Mechanics</h2>
+            <div id="shopsList"></div>
+        </div>
+    </div>
+
+    <script>
+        function checkForm() {
+            const location = document.getElementById('location').value.trim();
+            const service = document.getElementById('service').value;
+            const searchBtn = document.getElementById('searchBtn');
+            
+            if (location && service) {
+                searchBtn.disabled = false;
+                searchBtn.style.background = '#27ae60';
+            } else {
+                searchBtn.disabled = true;
+                searchBtn.style.background = '#bdc3c7';
+            }
+        }
+
+        async function searchMechanics() {
+            const location = document.getElementById('location').value.trim();
+            const service = document.getElementById('service').value;
+            const searchBtn = document.getElementById('searchBtn');
+            
+            searchBtn.textContent = 'Searching...';
+            searchBtn.disabled = true;
+            
+            try {
+                // Get coordinates from location
+                let lat, lng;
+                if (location.includes(',')) {
+                    const coords = location.split(',');
+                    lat = parseFloat(coords[0].trim());
+                    lng = parseFloat(coords[1].trim());
+                } else {
+                    // Try to get current location if not provided
+                    try {
+                        const position = await getCurrentLocation();
+                        lat = position.lat;
+                        lng = position.lng;
+                    } catch (error) {
+                        alert('Please enter coordinates as: latitude, longitude (e.g., 40.7128, -74.0060)');
+                        searchBtn.textContent = 'Search Mechanics';
+                        searchBtn.disabled = false;
+                        return;
+                    }
+                }
+                
+                // Map service values to match backend
+                const serviceMap = {
+                    'towing': 'towing',
+                    'battery': 'battery-jump',
+                    'tire': 'tire-repair',
+                    'fuel': 'fuel-delivery',
+                    'lockout': 'lockout',
+                    'engine': 'engine-repair'
+                };
+                
+                const mappedService = serviceMap[service] || service;
+                
+                const response = await fetch(`/api/mechanics/search?lat=${lat}&lng=${lng}&service=${mappedService}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayShops(data.mechanics, service);
+                } else {
+                    throw new Error(data.message || 'Search failed');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Error searching for mechanics: ' + error.message);
+            } finally {
+                searchBtn.textContent = 'Search Mechanics';
+                searchBtn.disabled = false;
+            }
+        }
+        
+        function getCurrentLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation not supported'));
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    }),
+                    error => reject(error),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            });
+        }
+
+        function displayShops(mechanics, service) {
+            const shopsSection = document.getElementById('shopsSection');
+            const shopsList = document.getElementById('shopsList');
+            
+            if (!mechanics || mechanics.length === 0) {
+                shopsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>No mechanics found</h3>
+                        <p>No mechanics available for ${service} in your area.</p>
+                        <p>Try a different service or location.</p>
+                    </div>
+                `;
+            } else {
+                shopsList.innerHTML = mechanics.map(shop => `
+                    <div class="shop-card">
+                        <div class="shop-header">
+                            <div class="shop-name">${shop.name}</div>
+                            <div class="shop-rating">⭐ ${shop.rating}</div>
+                        </div>
+                        <div class="shop-details">
+                            <p><strong>Owner:</strong> ${shop.owner || 'N/A'}</p>
+                            <p><strong>Distance:</strong> ${shop.distance} km</p>
+                            <p><strong>Address:</strong> ${shop.address}</p>
+                            <p><strong>Phone:</strong> ${shop.phone}</p>
+                            <p><strong>Service:</strong> ${service}</p>
+                            <p><strong>Hours:</strong> ${shop.hours}</p>
+                        </div>
+                        <div class="shop-actions">
+                            <button class="call-btn" onclick="callShop('${shop.phone}')">Call</button>
+                            <button class="select-btn" onclick="selectShop('${shop.name}')">Select</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            shopsSection.style.display = 'block';
+        }
+
+        function useCurrentLocation() {
+            const locationInput = document.getElementById('location');
+            locationInput.value = 'Getting location...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lng = position.coords.longitude.toFixed(6);
+                        locationInput.value = `${lat}, ${lng}`;
+                        checkForm();
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error);
+                        locationInput.value = '';
+                        alert('Unable to get your location. Please enter coordinates manually (e.g., 40.7128, -74.0060)');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                locationInput.value = '';
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        function callShop(phone) {
+            window.location.href = `tel:${phone}`;
+        }
+
+        function selectShop(shopName) {
+            alert(`Selected: ${shopName}`);
+        }
+    </script>
+</body>
+</html>

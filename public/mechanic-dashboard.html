@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanic Dashboard - Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .header { background: #667eea; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .logout-btn { background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .welcome { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .shop-setup { background: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .btn:hover { background: #5a6fd8; }
+        .requests { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .request-item { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .status { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .status.pending { background: #fff3cd; color: #856404; }
+        .status.accepted { background: #d4edda; color: #155724; }
+        .status.completed { background: #cce5ff; color: #004085; }
+        .hidden { display: none; }
+        .error { color: #ff6b6b; margin-top: 10px; }
+        .success { color: #4ecdc4; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Mechanic Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Welcome, <span id="mechanicName"></span>!</h2>
+            <p>Manage your services and requests from here.</p>
+        </div>
+
+        <div id="shopSetup" class="shop-setup hidden">
+            <h3>Setup Your Shop</h3>
+            <p>Please complete your shop setup to start receiving requests.</p>
+            
+            <form id="shopForm">
+                <div class="form-group">
+                    <label for="shopName">Shop Name</label>
+                    <input type="text" id="shopName" name="shopName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="services">Services Offered</label>
+                    <select id="services" name="services" multiple required>
+                        <option value="tire-repair">Tire Repair</option>
+                        <option value="battery-jump">Battery Jump Start</option>
+                        <option value="fuel-delivery">Fuel Delivery</option>
+                        <option value="towing">Towing Service</option>
+                        <option value="lockout">Car Lockout</option>
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple services</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" id="latitude" name="latitude" step="any" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" id="longitude" name="longitude" step="any" required>
+                </div>
+                
+                <button type="button" onclick="getCurrentLocation()" class="btn" style="background: #4ecdc4; margin-bottom: 10px;">Get Current Location</button>
+                <br>
+                <button type="submit" class="btn">Setup Shop</button>
+                
+                <div class="error" id="setupError" style="display: none;"></div>
+                <div class="success" id="setupSuccess" style="display: none;"></div>
+            </form>
+        </div>
+
+        <div id="requestsSection" class="requests hidden">
+            <h3>Service Requests</h3>
+            <div id="requestsList">
+                <p>Loading requests...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        let user;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = JSON.parse(localStorage.getItem('user'));
+            if (!user || user.userType !== 'mechanic') {
+                window.location.href = '/login';
+                return;
+            }
+
+            document.getElementById('mechanicName').textContent = user.name;
+            
+            // Initialize socket
+            socket = io();
+            socket.emit('join-room', user.id);
+            
+            // Check if shop setup is needed
+            await checkShopSetup();
+            
+            // Load requests if shop is set up
+            if (!document.getElementById('shopSetup').classList.contains('hidden')) {
+                // Shop setup needed
+            } else {
+                loadRequests();
+            }
+        });
+
+        async function checkShopSetup() {
+            try {
+                const response = await fetch('/api/mechanic/shop', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.status === 404) {
+                    // Shop not found, show setup form
+                    document.getElementById('shopSetup').classList.remove('hidden');
+                } else if (response.ok) {
+                    // Shop exists, show requests
+                    document.getElementById('requestsSection').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking shop setup:', error);
+                document.getElementById('shopSetup').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('shopForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const services = Array.from(document.getElementById('services').selectedOptions).map(option => option.value);
+            
+            const data = {
+                shopName: formData.get('shopName'),
+                address: formData.get('address'),
+                services: services,
+                coordinates: {
+                    lat: parseFloat(formData.get('latitude')),
+                    lng: parseFloat(formData.get('longitude'))
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/mechanic/setup-shop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('setupSuccess').textContent = 'Shop setup successful!';
+                    document.getElementById('setupSuccess').style.display = 'block';
+                    document.getElementById('setupError').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        document.getElementById('shopSetup').classList.add('hidden');
+                        document.getElementById('requestsSection').classList.remove('hidden');
+                        loadRequests();
+                    }, 2000);
+                } else {
+                    document.getElementById('setupError').textContent = result.message;
+                    document.getElementById('setupError').style.display = 'block';
+                    document.getElementById('setupSuccess').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('setupError').textContent = 'Network error. Please try again.';
+                document.getElementById('setupError').style.display = 'block';
+                document.getElementById('setupSuccess').style.display = 'none';
+            }
+        });
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                }, (error) => {
+                    alert('Error getting location: ' + error.message);
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await fetch('/api/mechanic/requests', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const requests = await response.json();
+                displayRequests(requests);
+            } catch (error) {
+                document.getElementById('requestsList').innerHTML = '<p>Error loading requests</p>';
+            }
+        }
+
+        function displayRequests(requests) {
+            const container = document.getElementById('requestsList');
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<p>No requests yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = requests.map(request => `
+                <div class="request-item">
+                    <h4>${request.serviceType.replace('-', ' ').toUpperCase()}</h4>
+                    <p><strong>Customer:</strong> ${request.userId.name} (${request.userId.phone})</p>
+                    <p><strong>Description:</strong> ${request.description}</p>
+                    <p><strong>Urgency:</strong> ${request.urgency}</p>
+                    <p><strong>Estimated Cost:</strong> ₹${request.estimatedCost}</p>
+                    <span class="status ${request.status}">${request.status.toUpperCase()}</span>
+                    ${request.status === 'pending' ? `
+                        <button onclick="updateRequestStatus('${request._id}', 'accepted')" class="btn" style="margin-left: 10px;">Accept</button>
+                        <button onclick="updateRequestStatus('${request._id}', 'rejected')" class="btn" style="background: #ff6b6b; margin-left: 5px;">Reject</button>
+                    ` : ''}
+                    ${request.status === 'accepted' ? `
+                        <button onclick="updateRequestStatus('${request._id}', 'completed')" class="btn" style="background: #4ecdc4; margin-left: 10px;">Mark Complete</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function updateRequestStatus(requestId, status) {
+            try {
+                const response = await fetch(`/api/mechanic/requests/${requestId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                if (response.ok) {
+                    loadRequests(); // Reload requests
+                }
+            } catch (error) {
+                alert('Error updating request status');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

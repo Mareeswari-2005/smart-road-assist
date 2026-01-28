@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Login - Smart Road Assistance</title>
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .container { max-width: 400px; margin: 0 auto; width: 100%; }
+        .logo { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            color: white;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        .logo h1 { 
+            font-size: 3rem; 
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .logo p {
+            font-size: 18px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        .login-card { 
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px; 
+            padding: 32px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        .form-group { margin-bottom: 24px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #333; 
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 16px 20px; 
+            border: 2px solid #f0f0f0; 
+            border-radius: 16px; 
+            font-size: 16px; 
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        .btn { 
+            width: 100%; 
+            padding: 18px; 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; 
+            border: none; 
+            border-radius: 16px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 16px; 
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn:active { 
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+        .links { 
+            text-align: center; 
+            margin-top: 28px;
+        }
+        .links a { 
+            color: #667eea; 
+            text-decoration: none; 
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .links a:hover {
+            color: #5a6fd8;
+        }
+        .error { 
+            color: #e74c3c; 
+            margin-top: 16px; 
+            text-align: center; 
+            padding: 12px 16px; 
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            border-radius: 12px; 
+            display: none;
+            font-size: 14px;
+        }
+        .user-type { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 24px;
+            background: #f8f9fa;
+            padding: 4px;
+            border-radius: 16px;
+        }
+        .user-type button { 
+            flex: 1; 
+            padding: 14px; 
+            border: none;
+            background: transparent;
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+        }
+        .user-type button.active { 
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* PWA Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+        
+        .install-prompt button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🚗</h1>
+            <p>Smart Road Assistance</p>
+        </div>
+        
+        <div class="login-card">
+            <div class="user-type">
+                <button type="button" id="userBtn" class="active" onclick="selectUserType('user')">👤 User</button>
+                <button type="button" id="mechanicBtn" onclick="selectUserType('mechanic')">🔧 Mechanic</button>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Sign In</span>
+                </button>
+                <div class="error" id="error"></div>
+            </form>
+            
+            <div class="links">
+                <p>Don't have an account? <a href="/mobile-register">Create Account</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="install-prompt" id="installPrompt">
+        <span>📱 Install app for better experience</span>
+        <button onclick="installApp()">Install</button>
+        <button onclick="dismissInstall()" style="background: #ccc; color: #333;">Later</button>
+    </div>
+
+    <script>
+        let selectedUserType = 'user';
+        let deferredPrompt;
+        
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'flex';
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').style.display = 'none';
+                });
+            }
+        }
+        
+        function dismissInstall() {
+            document.getElementById('installPrompt').style.display = 'none';
+        }
+        
+        function selectUserType(type) {
+            selectedUserType = type;
+            document.getElementById('userBtn').classList.toggle('active', type === 'user');
+            document.getElementById('mechanicBtn').classList.toggle('active', type === 'mechanic');
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = loginBtn.querySelector('.btn-text');
+            const errorDiv = document.getElementById('error');
+            
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            btnText.textContent = 'Signing In...';
+            errorDiv.style.display = 'none';
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                deviceId: localStorage.getItem('deviceId') || generateDeviceId()
+            };
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('deviceId', data.deviceId);
+                    sessionStorage.setItem('token', result.token);
+                    sessionStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // Save credentials for auto-login
+                    localStorage.setItem('savedEmail', data.email);
+                    localStorage.setItem('savedPassword', data.password);
+                    localStorage.setItem('savedUserType', selectedUserType);
+                    
+                    // Success feedback
+                    btnText.textContent = 'Success! Redirecting...';
+                    
+                    setTimeout(() => {
+                        if (result.user.userType === 'mechanic') {
+                            window.location.href = '/mobile-mechanic';
+                        } else {
+                            window.location.href = '/mobile-user';
+                        }
+                    }, 1000);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                
+                // Reset button state
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                btnText.textContent = 'Sign In';
+            }
+        });
+        
+        function generateDeviceId() {
+            return 'device_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        }
+        
+        // Auto-login check on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for saved credentials
+            const savedEmail = localStorage.getItem('savedEmail');
+            const savedPassword = localStorage.getItem('savedPassword');
+            const savedUserType = localStorage.getItem('savedUserType');
+            const deviceId = localStorage.getItem('deviceId');
+            
+            if (savedEmail && savedPassword && deviceId) {
+                console.log('Found saved credentials, attempting auto-login...');
+                
+                // Set user type
+                if (savedUserType) {
+                    selectUserType(savedUserType);
+                }
+                
+                // Fill form fields
+                document.getElementById('email').value = savedEmail;
+                document.getElementById('password').value = savedPassword;
+                
+                // Attempt auto-login
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: savedEmail,
+                            password: savedPassword,
+                            deviceId: deviceId
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        sessionStorage.setItem('token', result.token);
+                        sessionStorage.setItem('user', JSON.stringify(result.user));
+                        
+                        // Redirect based on user type
+                        if (result.user.userType === 'mechanic') {
+                            window.location.href = '/mobile-mechanic';
+                        } else {
+                            window.location.href = '/mobile-user';
+                        }
+                        return; // Exit early on successful auto-login
+                    }
+                } catch (error) {
+                    console.log('Auto-login failed:', error.message);
+                    // Clear invalid saved credentials
+                    localStorage.removeItem('savedEmail');
+                    localStorage.removeItem('savedPassword');
+                    localStorage.removeItem('savedUserType');
+                }
+            }
+            
+            // Auto-focus first input if no auto-login
+            document.getElementById('email').focus();
+        });
+    </script>
+</body>
+</html>

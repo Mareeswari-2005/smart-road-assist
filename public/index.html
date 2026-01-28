@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 50px; }
+        .header h1 { font-size: 3rem; margin-bottom: 10px; }
+        .header p { font-size: 1.2rem; opacity: 0.9; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px; }
+        .feature { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .feature h3 { color: #333; margin-bottom: 15px; }
+        .feature p { color: #666; line-height: 1.6; }
+        .cta { text-align: center; }
+        .btn { display: inline-block; padding: 15px 30px; margin: 10px; background: #ff6b6b; color: white; text-decoration: none; border-radius: 25px; font-weight: bold; transition: transform 0.3s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn.secondary { background: #4ecdc4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Smart Road Assistance</h1>
+            <p>Get help when you need it most - 24/7 roadside assistance at your fingertips</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🔧 Quick Service</h3>
+                <p>Connect with nearby mechanics instantly. Get tire repairs, battery jumps, and more within minutes.</p>
+            </div>
+            <div class="feature">
+                <h3>📍 Real-time Tracking</h3>
+                <p>Track your mechanic's location in real-time and get accurate arrival estimates.</p>
+            </div>
+            <div class="feature">
+                <h3>💰 Transparent Pricing</h3>
+                <p>Know the cost upfront with our transparent pricing system. No hidden fees or surprises.</p>
+            </div>
+        </div>
+
+        <div class="cta">
+            <a href="/login" class="btn">Get Started</a>
+            <a href="/register" class="btn secondary">Join as Mechanic</a>
+        </div>
+    </div>
+</body>
+</html>

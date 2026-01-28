@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Setup - Smart Road Assistance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .setup-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        .setup-header { text-align: center; margin-bottom: 30px; }
+        .setup-header h2 { color: #333; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .service-checkbox { display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .service-checkbox:hover { border-color: #667eea; }
+        .service-checkbox input[type="checkbox"] { margin: 0; }
+        .service-checkbox.selected { border-color: #667eea; background: #f0f4ff; }
+        .btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        .btn:hover { background: #5a6fd8; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .error { color: #ff6b6b; margin-top: 10px; text-align: center; }
+        .success { color: #4ecdc4; margin-top: 10px; text-align: center; }
+        .location-btn { background: #4ecdc4; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .location-btn:hover { background: #45b7aa; }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h2>🔧 Setup Your Shop</h2>
+            <p>Complete your mechanic profile to start receiving requests</p>
+        </div>
+        
+        <form id="shopSetupForm">
+            <div class="form-group">
+                <label for="shopName">Shop Name</label>
+                <input type="text" id="shopName" name="shopName" required placeholder="Enter your shop name">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Shop Phone Number</label>
+                <input type="tel" id="phone" name="phone" required placeholder="Shop contact number">
+            </div>
+            
+            <div class="form-group">
+                <label>Services Offered</label>
+                <div class="services-grid">
+                    <div class="service-checkbox" onclick="toggleService(this, 'Engine Repair')">
+                        <input type="checkbox" name="services" value="Engine Repair">
+                        <span>Engine Repair</span>
+                    </div>
+                    <div class="service-checkbox" onclick="toggleService(this, 'Tire Change')">
+                        <input type="checkbox" name="services" value="Tire Change">
+                        <span>Tire Change</span>
+                    </div>
+                    <div class="service-checkbox" onclick="toggleService(this, 'Battery Jump')">
+                        <input type="checkbox" name="services" value="Battery Jump">
+                        <span>Battery Jump</span>
+                    </div>
+                    <div class="service-checkbox" onclick="toggleService(this, 'Fuel Delivery')">
+                        <input type="checkbox" name="services" value="Fuel Delivery">
+                        <span>Fuel Delivery</span>
+                    </div>
+                    <div class="service-checkbox" onclick="toggleService(this, 'Towing')">
+                        <input type="checkbox" name="services" value="Towing">
+                        <span>Towing</span>
+                    </div>
+                    <div class="service-checkbox" onclick="toggleService(this, 'Lockout Service')">
+                        <input type="checkbox" name="services" value="Lockout Service">
+                        <span>Lockout Service</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Shop Address</label>
+                <textarea id="address" name="address" required placeholder="Enter your complete shop address" rows="3"></textarea>
+                <button type="button" class="location-btn" onclick="getCurrentLocation()" style="margin-top: 10px;">📍 Use Current Location</button>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" id="latitude" name="latitude" step="any" required placeholder="0.000000">
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" id="longitude" name="longitude" step="any" required placeholder="0.000000">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="openTime">Opening Time</label>
+                    <input type="time" id="openTime" name="openTime" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label for="closeTime">Closing Time</label>
+                    <input type="time" id="closeTime" name="closeTime" value="18:00">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">Complete Setup</button>
+            
+            <div class="error" id="error" style="display: none;"></div>
+            <div class="success" id="success" style="display: none;"></div>
+        </form>
+    </div>
+
+    <script>
+        function toggleService(element, service) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').textContent = 'Getting Location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitude').value = position.coords.latitude;
+                        document.getElementById('longitude').value = position.coords.longitude;
+                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('submitBtn').textContent = 'Complete Setup';
+                        
+                        // Reverse geocoding to get address (optional)
+                        reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        alert('Error getting location: ' + error.message);
+                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('submitBtn').textContent = 'Complete Setup';
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        async function reverseGeocode(lat, lng) {
+            try {
+                // Using a simple reverse geocoding approach
+                // In production, you might want to use Google Maps API or similar
+                const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+                const data = await response.json();
+                
+                if (data.locality) {
+                    const address = `${data.locality}, ${data.principalSubdivision}, ${data.countryName}`;
+                    document.getElementById('address').value = address;
+                }
+            } catch (error) {
+                console.log('Reverse geocoding failed:', error);
+            }
+        }
+
+        document.getElementById('shopSetupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const selectedServices = Array.from(document.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
+            
+            if (selectedServices.length === 0) {
+                document.getElementById('error').textContent = 'Please select at least one service.';
+                document.getElementById('error').style.display = 'block';
+                return;
+            }
+            
+            const data = {
+                shopName: formData.get('shopName'),
+                phone: formData.get('phone'),
+                services: selectedServices,
+                address: formData.get('address'),
+                latitude: parseFloat(formData.get('latitude')),
+                longitude: parseFloat(formData.get('longitude')),
+                workingHours: {
+                    open: formData.get('openTime'),
+                    close: formData.get('closeTime')
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/auth/setup-shop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('success').textContent = 'Shop setup completed! Redirecting to dashboard...';
+                    document.getElementById('success').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/mechanic-dashboard';
+                    }, 2000);
+                } else {
+                    document.getElementById('error').textContent = result.message;
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('success').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('error').textContent = 'Network error. Please try again.';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('success').style.display = 'none';
+            }
+        });
+
+        // Check if user is logged in and is a mechanic
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            const userData = JSON.parse(user);
+            if (userData.userType !== 'mechanic') {
+                window.location.href = '/user-dashboard';
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Help - Smart Road Assistance</title>
+    <meta name="theme-color" content="#667eea">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f8f9fa;
+            padding-bottom: 80px;
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; 
+            padding: 20px 15px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header-content { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .back-btn { 
+            background: rgba(255,255,255,0.2);
+            border: none; 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .container { 
+            padding: 20px 15px; 
+            max-width: 500px; 
+            margin: 0 auto;
+        }
+        .help-section {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .help-item {
+            padding: 15px;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .help-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        .help-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        .help-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .coming-soon-badge {
+            background: #ffc107;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .contact-info {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .contact-info h3 {
+            margin-bottom: 15px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        .faq-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 15px 0;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            display: none;
+        }
+        .faq-answer.show {
+            display: block;
+        }
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: white; 
+            padding: 12px 0;
+            border-top: 1px solid #e8ecef;
+            display: flex; 
+            justify-content: space-around;
+            z-index: 1000;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none; 
+            color: #666; 
+            font-size: 11px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+        .nav-item.active { 
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .nav-item .icon { 
+            font-size: 20px; 
+            margin-bottom: 4px;
+        }
+        .error-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .error-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 300px;
+            margin: 20px;
+        }
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .error-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .error-message {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        .error-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <h1>❓ Help & Support</h1>
+            <div></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Help Section -->
+        <div class="help-section">
+            <div class="section-title">
+                🚀 Quick Help
+            </div>
+            <div class="help-item" onclick="showComingSoon('Live Chat Support')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>💬 Live Chat Support</h4>
+                        <p>Get instant help from our support team</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+            <div class="help-item" onclick="showComingSoon('Video Tutorials')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>📹 Video Tutorials</h4>
+                        <p>Learn how to use the app effectively</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+            <div class="help-item" onclick="showComingSoon('Emergency Hotline')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>🚨 Emergency Hotline</h4>
+                        <p>24/7 emergency roadside assistance</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="help-section">
+            <div class="section-title">
+                ❓ Frequently Asked Questions
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I request roadside assistance?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Simply tap the "Request Service" button on your home screen, select the type of service you need, and provide your location. A nearby mechanic will be notified immediately.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How much does the service cost?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Service costs vary depending on the type of assistance needed. You'll see an estimated cost before confirming your request. Final pricing is determined by the mechanic based on the actual work required.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How long does it take for help to arrive?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Response times typically range from 15-45 minutes depending on your location and the availability of nearby mechanics. You'll receive real-time updates on the mechanic's arrival time.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Can I track the mechanic's location?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes! Once a mechanic accepts your request, you can track their real-time location and estimated arrival time through the app.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What if I need to cancel my request?
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    You can cancel your request anytime before the mechanic arrives by going to your active request and tapping "Cancel Request". Please note that cancellation fees may apply if the mechanic is already en route.
+                </div>
+            </div>
+        </div>
+
+        <!-- App Features Section -->
+        <div class="help-section">
+            <div class="section-title">
+                📱 App Features
+            </div>
+            <div class="help-item" onclick="showComingSoon('In-App Navigation')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>🗺️ In-App Navigation</h4>
+                        <p>Built-in GPS navigation to guide mechanics</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+            <div class="help-item" onclick="showComingSoon('Payment Integration')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>💳 Payment Integration</h4>
+                        <p>Secure in-app payments and digital receipts</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+            <div class="help-item" onclick="showComingSoon('Service History Export')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4>📊 Service History Export</h4>
+                        <p>Download your service history as PDF</p>
+                    </div>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-info">
+            <h3>📞 Contact Support</h3>
+            <div class="contact-item">
+                <span>📧</span>
+                <span>support@smartroadassistance.com</span>
+            </div>
+            <div class="contact-item">
+                <span>📱</span>
+                <span>+91 98765 43210</span>
+            </div>
+            <div class="contact-item">
+                <span>🕒</span>
+                <span>24/7 Support Available</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coming Soon Error Modal -->
+    <div class="error-modal" id="errorModal">
+        <div class="error-content">
+            <div class="error-icon">🚧</div>
+            <div class="error-title">Coming Soon!</div>
+            <div class="error-message" id="errorMessage">
+                This feature is currently under development and will be available in a future update.
+            </div>
+            <button class="error-btn" onclick="closeError()">Got it!</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/mobile-user" class="nav-item">
+            <span class="icon">🏠</span>
+            Home
+        </a>
+        <a href="/mobile-history" class="nav-item">
+            <span class="icon">📋</span>
+            History
+        </a>
+        <a href="/mobile-profile" class="nav-item">
+            <span class="icon">👤</span>
+            Profile
+        </a>
+        <a href="#" class="nav-item active">
+            <span class="icon">❓</span>
+            Help
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/mobile-login';
+                return;
+            }
+        });
+
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('span');
+            
+            if (answer.classList.contains('show')) {
+                answer.classList.remove('show');
+                icon.textContent = '+';
+            } else {
+                // Close all other FAQs
+                document.querySelectorAll('.faq-answer.show').forEach(item => {
+                    item.classList.remove('show');
+                });
+                document.querySelectorAll('.faq-question span').forEach(span => {
+                    span.textContent = '+';
+                });
+                
+                // Open clicked FAQ
+                answer.classList.add('show');
+                icon.textContent = '−';
+            }
+        }
+
+        function showComingSoon(featureName) {
+            const modal = document.getElementById('errorModal');
+            const message = document.getElementById('errorMessage');
+            
+            message.textContent = `${featureName} is currently under development and will be available in a future update. Stay tuned for exciting new features!`;
+            modal.style.display = 'flex';
+            
+            // Add animation
+            setTimeout(() => {
+                modal.querySelector('.error-content').style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        function closeError() {
+            const modal = document.getElementById('errorModal');
+            modal.style.display = 'none';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('errorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeError();
+            }
+        });
+    </script>
+</body>
+</html>
